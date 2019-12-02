@@ -24,16 +24,18 @@ def run_opcodes(opcodes):
             dat_1 = opcodes[dat_1_pos]
             dat_2 = opcodes[dat_2_pos]
             opcodes[out_pos] = dat_1 + dat_2
+            increment = 4
         elif opcode == 2:
             print("MULTIPLICATION")
             dat_1 = opcodes[dat_1_pos]
             dat_2 = opcodes[dat_2_pos]
             opcodes[out_pos] = dat_1 * dat_2
+            increment = 4
         else:            
             stop = True
             break
         
-        index = index + 4
+        index = index + increment
     
     return opcodes
 

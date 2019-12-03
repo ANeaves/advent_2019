@@ -10,6 +10,7 @@ class wire(object):
         self.spaces = []
 
         current_pos = [0, 0]  # [x, y], y is horizontal, up, right are positive moves
+        current_length = 0
         for path_part in path:
             direct = path_part[0]
             path_part = path_part.strip(direct)
@@ -22,11 +23,11 @@ class wire(object):
                     self.spaces.append((current_pos[0], i))
             elif direct == "D":  # Down
                 new_pos = [current_pos[0], current_pos[1] - dist]
-                for i in range(new_pos[1], current_pos[1]):
+                for i in range(current_pos[1], new_pos[1], -1):
                     self.spaces.append((current_pos[0], i))
             elif direct == "L":  # left
                 new_pos = [current_pos[0] - dist, current_pos[1]]
-                for i in range(new_pos[0], current_pos[0]):
+                for i in range(current_pos[0], new_pos[0], -1):
                     self.spaces.append((i, current_pos[1]))
             elif direct == "R": # Right
                 new_pos = [current_pos[0] + dist, current_pos[1]]
@@ -56,6 +57,7 @@ if __name__ == "__main__":
 
     # intersections = [x for x in wires[0].spaces if x in wires[1].spaces]
     intersections = set(wires[0].spaces).intersection(wires[1].spaces)
+    intersections.remove((0,0))
     # intersections.remove((0,0))
     logging.info("NUM INTERSECTIONS: %d", len(intersections))
 

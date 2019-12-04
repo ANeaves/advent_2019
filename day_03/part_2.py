@@ -45,7 +45,7 @@ class wire(object):
                     if coord not in self.spaces:
                         self.spaces[coord] = current_length
                     current_length += 1
-            else:15678
+            else:
                 logging.error("DIRECTION NOT VALID: %s", direct)
                 return
             current_pos = new_pos

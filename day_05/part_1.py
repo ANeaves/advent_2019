@@ -1,8 +1,6 @@
 import sys
 from copy import deepcopy
 import logging
-
-
 class IntcodeStates():
     idle = 0
     running = 1
@@ -71,7 +69,7 @@ class IntcodeComputer():
             except IndexError:
                 self.state = IntcodeStates.error
                 logging.error("ERROR: Index Out of Bounds")
-
+    
     def get_param(self, param, param_mode):
         if param_mode == '1':
             return param
@@ -81,6 +79,7 @@ class IntcodeComputer():
     def get_params(self, params, param_modes):
         param_modes = reversed(param_modes)
         return list(map(self.get_param, params, param_modes))
+
 
     # OPCODE METHODS BELOW
     def add(self, a, b, out, param_modes):
@@ -125,6 +124,7 @@ class IntcodeComputer():
         else:
             self.memory[out] = 0
 
+
     def halt(self, param_modes):
         logging.info("Program Complete")
         self.state = IntcodeStates.halted
@@ -132,7 +132,9 @@ class IntcodeComputer():
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     file_name = sys.argv[1]
+    prog_input = int(sys.argv[2])
     computer = IntcodeComputer()
+    computer.set_input(prog_input)
     computer.get_code_from_file(file_name)
     computer.run()
-    logging.info("Resulting Memory:\n%s", computer.memory)
+    logging.info("OUTPUT: %d", computer.output)

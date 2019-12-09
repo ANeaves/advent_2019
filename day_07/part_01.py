@@ -29,7 +29,8 @@ if __name__ == "__main__":
         logging.info("TRYING PERMUTATION: %s", permutation)
         current_output = 0
         for phase, computer in list(zip(permutation, amplifiers)):
-            computer.set_input([phase, current_output])
+            computer.set_input(phase)
+            computer.set_input(current_output)
             computer.run()
             current_output = computer.output
         all_outputs.append(current_output)

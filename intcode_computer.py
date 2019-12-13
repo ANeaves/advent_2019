@@ -4,12 +4,14 @@ import logging
 import threading
 from queue import Queue
 
+
 class IntcodeStates():
     idle = 0
     running = 1
     halted = 99
 
     error = -1
+
 
 class IntcodeComputer():
 
@@ -77,7 +79,6 @@ class IntcodeComputer():
         else:
             self.__run_prog()
 
-
     def __run_prog(self):
         self.state = IntcodeStates.running
         logging.info("Starting Run of %s", self.name)
@@ -88,7 +89,7 @@ class IntcodeComputer():
                 opcode = full_opcode % 100
                 # logging.debug("OPCODE: %d", opcode)
                 instruction, param_count = self.instruction_set[opcode]
-                params = self.memory[self.pointer+1:self.pointer+param_count+1]
+                params = self.memory[self.pointer + 1:self.pointer + param_count + 1]
                 param_modes = str(full_opcode)[0:-2].rjust(param_count, '0')
                 instruction(*params, param_modes)
                 self.pointer += 1 + param_count
@@ -96,16 +97,16 @@ class IntcodeComputer():
             except KeyError:
                 self.state = IntcodeStates.error
                 logging.error("ERROR: Instruction not found: %d", instruction)
-            
-            except IndexError:
+
+            except IndexError as err:
                 self.state = IntcodeStates.error
-                logging.error("ERROR: Index Out of Bounds")
+                logging.error("ERROR: Index Out of Bounds: %s", err)
 
     def extend_memory(self, needed_length):
         self.memory.extend([0] * needed_length)
 
     def get_param(self, param, param_mode):
-        
+
         if param_mode == '1':
             return param
         elif param_mode == '2':
@@ -133,7 +134,7 @@ class IntcodeComputer():
             out = out + self.rel_base
         if out >= len(self.memory):
             self.extend_memory(out)
-        logging.debug("%2s: %04x: ADD %8x %8x -> %8x", self.name, self.pointer, a, b, out)
+        logging.debug("%2s: %04d: ADD %8d %8d -> %8d", self.name, self.pointer, a, b, out)
         self.memory[out] = a + b
 
     def mul(self, a, b, out, param_modes):
@@ -142,7 +143,7 @@ class IntcodeComputer():
             out = out + self.rel_base
         if out >= len(self.memory):
             self.extend_memory(out)
-        logging.debug("%2s: %04x: MUL %8x %8x -> %8x", self.name, self.pointer, a, b, out)
+        logging.debug("%2s: %04d: MUL %8d %8d -> %8d", self.name, self.pointer, a, b, out)
         self.memory[out] = a * b
 
     def put(self, put_addr, param_modes):
@@ -150,50 +151,47 @@ class IntcodeComputer():
             put_addr = put_addr + self.rel_base
         if put_addr >= len(self.memory):
             self.extend_memory(put_addr)
-        logging.debug("%2s: %04x: LOD %8s %8s -> %8x", self.name, self.pointer, "[INPUT]", " ", put_addr)
+        logging.debug("%2s: %04d: LOD %8s %8s -> %8d", self.name, self.pointer, "[INPUT]", " ", put_addr)
         self.memory[put_addr] = self.input.get()
 
-    def out(self, out_addr, param_modes):
-        if param_modes == '2':
-            out_addr = out_addr + self.rel_base
-        if out_addr >= len(self.memory):
-            self.extend_memory(out_addr)
-        logging.debug("%2s: %04x: WRT %8x %8s -> %8s", self.name, self.pointer, out_addr, "", "[OUTPUT]")
-        self.output = self.memory[out_addr]
+    def out(self, out, param_modes):
+        out = self.get_params([out], param_modes)[0]
+        logging.debug("%2s: %04d: WRT %8d %8s -> %8s", self.name, self.pointer, out, "", "[OUTPUT]")
+        self.output = out
         if self.output_method:
-            self.output_method(self.memory[out_addr])
-    
+            self.output_method(out)
+
     def jmp_true(self, check, jmp_addr, param_modes):
         check, jmp_addr = self.get_params([check, jmp_addr], param_modes)
-        logging.debug("%2s: %04x: JNZ %8x %8s -> %8x", self.name, self.pointer, check, "", jmp_addr)
+        logging.debug("%2s: %04d: JNZ %8d %8s -> %8d", self.name, self.pointer, check, "", jmp_addr)
         if check:
             self.pointer = jmp_addr - 3  # the minus 3 is to account for the pointer moving at the end of the run loop
-    
+
     def jmp_flse(self, check, jmp_addr, param_modes):
         check, jmp_addr = self.get_params([check, jmp_addr], param_modes)
-        logging.debug("%2s: %04x: JEZ %8x %8s -> %8x", self.name, self.pointer, check, "", jmp_addr)
+        logging.debug("%2s: %04d: JEZ %8d %8s -> %8d", self.name, self.pointer, check, "", jmp_addr)
         if not check:
             self.pointer = jmp_addr - 3
-    
+
     def less(self, a, b, out, param_modes):
         a, b, _ = self.get_params([a, b, out], param_modes)
         if param_modes[0] == '2':
             out = out + self.rel_base
         if out >= len(self.memory):
             self.extend_memory(out)
-        logging.debug("%2s: %04x: TLT %8x %8x -> %8x", self.name, self.pointer, a, b, out)
+        logging.debug("%2s: %04d: TLT %8d %8d -> %8d", self.name, self.pointer, a, b, out)
         if a < b:
             self.memory[out] = 1
         else:
             self.memory[out] = 0
-    
+
     def eql(self, a, b, out, param_modes):
         a, b, _ = self.get_params([a, b, out], param_modes)
         if param_modes[0] == '2':
             out = out + self.rel_base
         if out >= len(self.memory):
             self.extend_memory(out)
-        logging.debug("%2s: %04x: TEQ %8x %8x -> %8x", self.name, self.pointer, a, b, out)
+        logging.debug("%2s: %04d: TEQ %8d %8d -> %8d", self.name, self.pointer, a, b, out)
         if a == b:
             self.memory[out] = 1
         else:
@@ -201,13 +199,14 @@ class IntcodeComputer():
 
     def set_base(self, a, param_modes):
         a = self.get_param(a, param_modes)
-        logging.debug("%2s: %04x: BAS %8s %8s -> %08x", self.name, self.pointer, "BAS_ADDR", "", a)
+        logging.debug("%2s: %04d: BAS %8s %8s -> %8d", self.name, self.pointer, "BAS_ADDR", "", a)
         self.rel_base += a
         # logging.debug("NEW RELATIVE BASE: %d", self.rel_base)
 
     def halt(self, param_modes):
         logging.info("%2s: Program Complete", self.name)
         self.state = IntcodeStates.halted
+
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)

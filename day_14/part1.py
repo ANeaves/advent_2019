@@ -1,7 +1,7 @@
 import logging
 import sys
 from collections import defaultdict
-from math import ceil
+
 
 class Element(object):
 
@@ -56,11 +56,8 @@ class NanoFactory(object):
         return needed_elements
             
 
-
-
-
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     file_name = sys.argv[1]
     factory = NanoFactory(file_name)
 
@@ -68,4 +65,24 @@ if __name__ == "__main__":
     needed_elements = factory.get_base_ingredients("FUEL", 1)
     logging.debug(needed_elements)
     logging.info("Required Ore for 1 Fuel: %d", needed_elements["ORE"])
+
+    logging.info("Looking for amount for 1 Trillian Ore")
+    max_ore = 1000000000000
+    fuel_min = max_ore // needed_elements["ORE"]
+    fuel_max = max_ore
+
+    logging.info("Estimates expect a bit more than %d", fuel_min)
+    while fuel_max - fuel_min > 1:
+        mid = (fuel_min + fuel_max) // 2
+        needed_elements = factory.get_base_ingredients("FUEL", mid)
+        quantity = needed_elements["ORE"]
+        logging.info("Amount of Ore used to produce %d fuel: %d", mid, quantity)
+        if quantity <= max_ore:
+            fuel_min = mid
+        else:
+            fuel_max = mid
+    
+    logging.info("1 trillian ore produces %d fuel", fuel_min)
+
+
 

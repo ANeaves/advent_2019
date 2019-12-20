@@ -32,7 +32,7 @@ class ObjectInSpace(object):  # too complex? Maybe so
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     file_name = sys.argv[1]
     dict_of_bodies = {}
 
@@ -80,4 +80,4 @@ if __name__ == "__main__":
 
     total_path = list(set(you_path).symmetric_difference(santa_path))
     logging.debug("TOTAL PATH: %s", total_path)
-    logging.debug("LENGTH TO SANTA: %d", len(total_path))
+    logging.info("LENGTH TO SANTA: %d", len(total_path))

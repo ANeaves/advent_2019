@@ -226,13 +226,17 @@ class IntcodeComputer():
 
         logging.debug(print_line.format(pos=self.pointer, opname=method_name, params=print_params))
 
+def handle_output(output):
+    output_list.append(output)
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
-    file_name = sys.argv[1]        
-    computer = IntcodeComputer()
+    file_name = sys.argv[1]  
+    output_list = []      
+    computer = IntcodeComputer(output_method=handle_output)
     computer.get_code_from_file(file_name)
     if len(sys.argv) > 2:
         computer_input = [int(x) for x in sys.argv[2:]]
         computer.set_input(computer_input)
     computer.run()
+    logging.debug(output_list)
